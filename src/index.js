@@ -15,35 +15,39 @@ class System extends node.events {
         return this
     }
 
-    install(installer) {
-        if (!installer) {
-            return this.emit('error', new Error("installer not found"))
-        }
+    install(installers = []) {
+        return _.map(installers, (installer) => {
+            if (!installer) {
+                return this.emit('error', new Error("installer not found"))
+            }
 
-        if (!installer.$ID) {
-            return this.emit('error', new Error("installer not found"))
-        }
+            if (!installer.$ID) {
+                return this.emit('error', new Error("installer not found"))
+            }
 
-        const instModule = installer.setup(
-            installer, _.tail(arguments)
-        )
-        this[`\$${installer.$ID}`] = installer
+            const instModule = installer.setup(
+                installer, _.tail(arguments)
+            )
+            this[`\$${installer.$ID}`] = installer
 
-        if (!instModule) {
-            return this.emit('error', new Error("module installation interupted"))
-        }
+            if (!instModule) {
+                return this.emit('error', new Error("module installation interupted"))
+            }
 
-        this[installer.$ID] = instModule
-        return instModule
+            this[installer.$ID] = instModule
+            return instModule
+        })
     }
 
-    bootstrap() {
-        this.dcfg = new Dcfg({
+    bootstrap(options = {}) {
+        _.defaults(options, {
             dbs: [],
             baseDir: null,
             evalName: 'config',
             store: null
-        }, (error, values) => {
+        })
+
+        this.dcfg = new Dcfg(options, (error, values) => {
             global.config = (keyPath, defaultValue) => {
                 return _.get(values, keyPath, defaultValue)
             }

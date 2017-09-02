@@ -92,10 +92,10 @@ class App {
         this._controllerPath = this.getControllerPath()
         this._middwarePath = this.getMiddwarePath()
         this._helperPath = this.getHelperPath()
-
         this._engine = this.createEngine()
-        this._loadMiddware(config('middwares', []))
         this._controllers = this.createControllers()
+
+        this._loadMiddware(config('middwares', []))
         this._registerHelper()
 
         this.initialize()
@@ -188,20 +188,23 @@ class App {
         return _.chain(
                 __(this.controllerPath).getItems(/\.http\.js$/g)
             )
-            .reduce((result, files, path) => {
-                const routeFiles = _.map(files, (file) => {
-                    const mp = node.path
-                        .basename(file)
+            .reduce((result, filePaths, path) => {
+                const routeFiles = _.map(filePaths, (filePath) => {
+                    const ctrlPath = filePath
                         .replace(/\.http\.js$/g, String())
+                    const ctrlName = node.path.basename(ctrlPath)
+
+                    const mountPoint = node.path.resolve(
+                        this.mountPoint, node.path.relative(
+                            this.controllerPath, ctrlPath
+                        )
+                    )
 
                     return {
-                        root: file,
-                        mountPoint: node.path.resolve(
-                            this.mountPoint,
-                            !_.isEqual(mp, 'index')
-                                ? (String('/') + mp)
-                                : String()
-                        ),
+                        root: filePath,
+                        mountPoint: !_.isEqual(ctrlName, 'index')
+                            ? mountPoint
+                            : node.path.dirname(mountPoint),
                         dirpath: path
                     }
                 })
@@ -223,21 +226,34 @@ class App {
                 }
 
                 _.forEach(rConfig, (methods, routePath) => {
-                    routePath = (item.mountPoint + routePath).replace(/([\/\\]+)/g, String('/'))
+                    routePath = node.path
+                        .join(item.mountPoint, routePath)
+                        .replace(/([\/\\]+)/g, String('/'))
 
                     const routerRoute = router.route(routePath)
                     const allowedMethods = this._getRequestAllowedMethods()
 
-                    _.forEach(methods, (func, method) => {
+                    _.forEach(methods, (actions, method) => {
                         method = _.words(method, /[^, ]+/g)
 
                         _.forEach(method, (methodName) => {
                             methodName = methodName.toLowerCase()
                             const isAllowed = _.includes(allowedMethods, methodName)
 
-                            if (isAllowed) routerRoute[methodName](function() {
-                                return func.apply(this, arguments)
-                            })
+                            if (!isAllowed) {
+                                return
+                            }
+
+                            actions = _.chain(actions)
+                                .castArray()
+                                .map((action) => {
+                                    return function() {
+                                        return action.apply(this, arguments)
+                                    }
+                                })
+                                .value()
+
+                            routerRoute[methodName].apply(routerRoute, actions)
                         })
                     })
                 })
@@ -291,12 +307,8 @@ class App {
         if (_.isObject(middwares)) {
             middwares = _.values(middwares)
         }
-        if (_.isFunction(middwares)) {
-            middwares = [middwares]
-        }
-        if (!_.isArray(middwares)) {
-            return
-        }
+        middwares = _.castArray(middwares)
+
         if (baseMiddware && _.isArray(baseMiddware)) {
             middwares = _.concat(baseMiddware, middwares)
         }

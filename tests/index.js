@@ -1,14 +1,18 @@
-require('../')
+const system = global.system = new (require('../'))
 
-// system.install(require('@solais/server'))
+system.install([
+    require('../modules/server')
+])
 
-// server.setup()
-// server.start()
+system.once('ready', () => {
+    server.setup()
+    server.start()
+})
 
-// if (global.gc) {
-//     global.gc() & setInterval(function() {
-//         return global.gc()
-//     }, 1800000)
-// }
+module.exports = system.bootstrap()
 
-// console.log(system.dcfg)
+if (global.gc) {
+    global.gc() & setInterval(function() {
+        return global.gc()
+    }, 1800000)
+}

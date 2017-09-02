@@ -68,6 +68,8 @@ class Server extends system.module {
 
     constructor() {
         super()
+
+        global.server = this
         return this
     }
 
