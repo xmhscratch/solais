@@ -1,0 +1,37 @@
+{
+  "name": "solais",
+  "version": "1.0.0",
+  "description": "Modular HMVC framework for nodejs",
+  "main": "index.js",
+  "scripts": {
+    "test": "node ./tests/index"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xmhscratch/solais.git"
+  },
+  "author": "xmhscratch",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/xmhscratch/solais/issues"
+  },
+  "homepage": "https://github.com/xmhscratch/solais#readme",
+  "dependencies": {
+    "async": "^2.5.0",
+    "bluebird": "^3.5.0",
+    "body-parser": "^1.17.2",
+    "compression": "^1.7.0",
+    "cookie-parser": "^1.4.3",
+    "dcfg": "git+ssh://git@github.com/xmhscratch/dcfg.git",
+    "ejs": "^2.5.7",
+    "express": "^4.15.4",
+    "express-session": "^1.15.5",
+    "flatory": "git+ssh://git@github.com:xmhscratch/flatory.git",
+    "html-minifier": "^3.5.3",
+    "lodash": "^4.17.4",
+    "morgan": "^1.8.2",
+    "request": "^2.81.0",
+    "serve-favicon": "^2.4.3",
+    "sitemap": "^1.13.0"
+  }
+}
