@@ -1,13 +1,13 @@
 const system = global.system = new (require('../'))
 
-system.once('ready', () => {
-    server.start()
-})
-
 system.install([
     require('../modules/server')
 ]).then(() => {
     system.bootstrap()
+})
+
+system.once('ready', () => {
+    server.start()
 })
 
 if (global.gc) {
