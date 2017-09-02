@@ -68,12 +68,16 @@ class Server extends system.module {
 
     constructor() {
         super()
-
-        global.server = this
-        return this
     }
 
-    initialize() {}
+    initialize(done) {
+        global.server = this
+
+        process.nextTick(() => {
+            this.setup()
+        })
+        return done()
+    }
 
     getBasePath() {
         return system.dcfg.getBasePath()

@@ -16,7 +16,7 @@ class System extends node.events {
     }
 
     install(installers = []) {
-        return _.map(installers, (installer) => {
+        return Promise.mapSeries(installers, (installer) => {
             if (!installer) {
                 return this.emit('error', new Error("installer not found"))
             }
@@ -25,17 +25,17 @@ class System extends node.events {
                 return this.emit('error', new Error("installer not found"))
             }
 
-            const instModule = installer.setup(
+            const module = installer.setup(
                 installer, _.tail(arguments)
             )
             this[`\$${installer.$ID}`] = installer
 
-            if (!instModule) {
+            if (!module) {
                 return this.emit('error', new Error("module installation interupted"))
             }
 
-            this[installer.$ID] = instModule
-            return instModule
+            this[installer.$ID] = module
+            return module
         })
     }
 

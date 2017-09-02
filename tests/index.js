@@ -1,15 +1,14 @@
 const system = global.system = new (require('../'))
 
-system.install([
-    require('../modules/server')
-])
-
 system.once('ready', () => {
-    server.setup()
     server.start()
 })
 
-module.exports = system.bootstrap()
+system.install([
+    require('../modules/server')
+]).then(() => {
+    system.bootstrap()
+})
 
 if (global.gc) {
     global.gc() & setInterval(function() {

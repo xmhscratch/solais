@@ -1,17 +1,29 @@
 class Module {
 
     constructor() {
-        this.initialize()
-        return this
+        return new Promise((resolve, reject) => {
+            return this.initialize((error, results) => {
+                if (error) {
+                    return reject(error)
+                } else {
+                    return resolve(results)
+                }
+            })
+        })
     }
 
-    initialize() {}
+    initialize(done) {
+        return done()
+    }
 
     static setup(moduleInst, params) {
         if(_.isEmpty(moduleInst.$ID)) {
-            return false;
+            return false
         }
-        return new (Function.prototype.bind.apply(moduleInst, params))
+
+        return new (
+            Function.prototype.bind.apply(moduleInst, params)
+        )
     }
 }
 
