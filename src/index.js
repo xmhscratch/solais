@@ -10,33 +10,13 @@ const Dcfg = require('dcfg')
 
 class System extends node.events {
 
+    static get Module() {
+        return require('./module')
+    }
+
     constructor() {
         super()
         return this
-    }
-
-    install(installers = []) {
-        return Promise.mapSeries(installers, (installer) => {
-            if (!installer) {
-                return this.emit('error', new Error("installer not found"))
-            }
-
-            if (!installer.$ID) {
-                return this.emit('error', new Error("installer not found"))
-            }
-
-            const module = installer.setup(
-                installer, _.tail(arguments)
-            )
-            this[`\$${installer.$ID}`] = installer
-
-            if (!module) {
-                return this.emit('error', new Error("module installation interupted"))
-            }
-
-            this[installer.$ID] = module
-            return module
-        })
     }
 
     bootstrap(options = {}) {
@@ -47,22 +27,55 @@ class System extends node.events {
             store: null
         })
 
-        this.dcfg = new Dcfg(options, (error, values) => {
-            global.config = (keyPath, defaultValue) => {
-                return _.get(values, keyPath, defaultValue)
-            }
+        return new Promise((resolve, reject) => {
+            this.dcfg = new Dcfg(
+                options, (error, values) => {
+                    if (error) {
+                        return reject(error)
+                    }
 
-            return setImmediate(() => {
-                this.emit('ready')
-            })
+                    global.config = (keyPath, defaultValue) => {
+                        return _.get(values, keyPath, defaultValue)
+                    }
+
+                    return resolve(values)
+                }
+            )
         })
-
-        return this
     }
 
-    get module() {
-        return require('./module')
+    install(installers = []) {
+        return Promise.mapSeries(installers, (installer) => {
+            if (!installer) {
+                throw new Error("installer not found")
+            }
+
+            if (!installer.$ID) {
+                throw new Error("installer not found")
+            }
+
+            const module = installer.setup(
+                installer, _.tail(arguments)
+            )
+            const varName = _.camelCase(installer.$ID)
+            const className = _.upperFirst(varName)
+
+            this[`\$${varName}`] = installer
+
+            if (!module) {
+                throw new Error("module installation interupted")
+            }
+
+            System[className] = module
+            return module
+        })
+        .then(() => {
+            this.emit('ready')
+        })
+        .catch((error) => {
+            this.emit('error', error)
+        })
     }
 }
 
-module.exports = System
+module.exports = global.System = System
