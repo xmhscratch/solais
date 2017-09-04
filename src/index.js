@@ -1,5 +1,5 @@
 global._ = require('lodash')
-global.__ = require('flatory')
+global.fs = require('flatory')
 global.async = require('async')
 global.Promise = require('bluebird')
 global.request = require('request')
@@ -16,7 +16,6 @@ class System extends node.events {
 
     constructor() {
         super()
-        return this
     }
 
     bootstrap(options = {}) {
@@ -27,24 +26,22 @@ class System extends node.events {
             store: null
         })
 
-        return new Promise((resolve, reject) => {
-            this.dcfg = new Dcfg(
-                options, (error, values) => {
-                    if (error) {
-                        return reject(error)
-                    }
-
-                    global.config = (keyPath, defaultValue) => {
-                        return _.get(values, keyPath, defaultValue)
-                    }
-
-                    return resolve(values)
+        return Promise.promisify((options, done) => {
+            global.$dcfg = new Dcfg(options, done)
+        })(options)
+            .then((values) => {
+                global.config = (keyPath, defaultValue) => {
+                    return _.get(values, keyPath, defaultValue)
                 }
-            )
-        })
+            })
+            .catch((error) => {
+                this.emit('error', error)
+            })
     }
 
     install(installers = []) {
+        const modules = {}
+
         return Promise.mapSeries(installers, (installer) => {
             if (!installer) {
                 throw new Error("installer not found")
@@ -54,23 +51,17 @@ class System extends node.events {
                 throw new Error("installer not found")
             }
 
-            const module = installer.setup(
-                installer, _.tail(arguments)
-            )
             const varName = _.camelCase(installer.$ID)
             const className = _.upperFirst(varName)
+            _.set(System, className, installer)
 
-            this[`\$${varName}`] = installer
-
-            if (!module) {
-                throw new Error("module installation interupted")
-            }
-
-            System[className] = module
-            return module
+            modules[`\$${varName}`] = installer.setup(
+                installer, _.tail(arguments)
+            )
+            return modules[`\$${varName}`]
         })
         .then(() => {
-            this.emit('ready')
+            this.emit('ready', modules)
         })
         .catch((error) => {
             this.emit('error', error)
