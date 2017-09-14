@@ -1,15 +1,7 @@
 class Module {
 
     constructor() {
-        return new Promise((resolve, reject) => {
-            return this.initialize((error, results) => {
-                if (error) {
-                    return reject(error)
-                } else {
-                    return resolve(results)
-                }
-            })
-        })
+        return this
     }
 
     initialize(done) {

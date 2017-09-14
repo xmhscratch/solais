@@ -40,8 +40,6 @@ class System extends node.events {
     }
 
     install(installers = []) {
-        const modules = {}
-
         return Promise.mapSeries(installers, (installer) => {
             if (!installer) {
                 throw new Error("installer not found")
@@ -55,17 +53,18 @@ class System extends node.events {
             const className = _.upperFirst(varName)
             _.set(System, className, installer)
 
-            modules[`\$${varName}`] = installer.setup(
+            const module = installer.setup(
                 installer, _.tail(arguments)
             )
-            return modules[`\$${varName}`]
+            return module
         })
-        .then(() => {
-            this.emit('ready', modules)
-        })
-        .catch((error) => {
-            this.emit('error', error)
-        })
+        .then((modules) => Promise.mapSeries(modules, (module) => {
+            return Promise
+                .promisify(module.initialize)
+                .apply(module, [])
+        }))
+        .then((modules) => this.emit('ready', modules))
+        .catch((error) => this.emit('error', error))
     }
 }
 
