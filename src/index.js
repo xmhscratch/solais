@@ -14,10 +14,6 @@ class System extends node.events {
         return require('./module')
     }
 
-    constructor() {
-        super()
-    }
-
     bootstrap(options = {}) {
         _.defaults(options, {
             dbs: [],
@@ -31,6 +27,12 @@ class System extends node.events {
         })(options)
             .then((values) => {
                 global.config = (keyPath, defaultValue) => {
+                    if (_.isPlainObject(defaultValue)) {
+                        return _.defaultsDeep(_.get(values, keyPath, {}), defaultValue)
+                    }
+                    if (_.isArray(defaultValue)) {
+                        return _.union(defaultValue, _.get(values, keyPath, []))
+                    }
                     return _.get(values, keyPath, defaultValue)
                 }
             })
