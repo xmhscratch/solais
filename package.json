@@ -1,11 +1,12 @@
 {
-  "name": "solais",
+  "name": "@claimh/solais",
   "version": "1.0.0",
   "description": "Modular HMVC framework for nodejs",
   "main": "index.js",
   "scripts": {
     "test": "node ./tests/index"
   },
+  "private": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/xmhscratch/solais.git"
