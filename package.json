@@ -20,8 +20,8 @@
   "dependencies": {
     "async": "^2.5.0",
     "bluebird": "^3.5.0",
-    "dcfg": "git+ssh://git@github.com/xmhscratch/dcfg.git",
-    "flatory": "git+ssh://git@github.com:xmhscratch/flatory.git",
+    "@claimh/dcfg": "^1.0.0",
+    "@claimh/flatory": "^1.0.0",
     "lodash": "^4.17.4",
     "request": "^2.81.0"
   }
