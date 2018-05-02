@@ -1,5 +1,5 @@
 {
-  "name": "@claimh/solais",
+  "name": "solais",
   "version": "1.0.0",
   "description": "Modular HMVC framework for nodejs",
   "main": "index.js",
@@ -22,8 +22,8 @@
   "dependencies": {
     "async": "^2.5.0",
     "bluebird": "^3.5.0",
-    "@claimh/dcfg": "^1.0.0",
-    "@claimh/flatory": "^1.0.0",
+    "dcfg": "^1.0.0",
+    "flatory": "^1.0.0",
     "lodash": "^4.17.4",
     "request": "^2.81.0"
   }
